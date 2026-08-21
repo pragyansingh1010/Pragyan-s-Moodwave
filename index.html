@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MoodWave — Music That Feels You</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    /* ── LANDING SPECIFIC ── */
+    .landing-wrap {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+    }
+
+    .hero {
+      text-align: center;
+      max-width: 680px;
+      animation: fadeUp 0.9s ease both;
+    }
+
+    .logo-mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin-bottom: 3rem;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .logo-ring {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(201,168,76,0.5);
+      display: grid;
+      place-items: center;
+      font-size: 1.4rem;
+      background: rgba(201,168,76,0.06);
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .logo-name {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    .hero-eyebrow {
+      font-size: 0.75rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1.2rem;
+      opacity: 0.8;
+      animation: fadeUp 0.7s ease both 0.1s;
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(3rem, 8vw, 5.5rem);
+      font-weight: 300;
+      line-height: 1.1;
+      margin-bottom: 1.6rem;
+      animation: fadeUp 0.8s ease both 0.15s;
+    }
+
+    .hero-title em {
+      font-style: italic;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold2) 60%, #fde68a 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-sub {
+      font-size: 1.05rem;
+      line-height: 1.75;
+      color: var(--muted);
+      max-width: 500px;
+      margin: 0 auto 3rem;
+      font-weight: 300;
+      animation: fadeUp 0.8s ease both 0.22s;
+    }
+
+    .hero-cta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      animation: fadeUp 0.8s ease both 0.3s;
+    }
+
+    .btn-large {
+      padding: 1.05rem 2.6rem;
+      font-size: 1rem;
+    }
+
+    /* floating music notes */
+    .notes-decor {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .note {
+      position: absolute;
+      font-size: 1.4rem;
+      opacity: 0;
+      animation: noteFloat 8s ease-in-out infinite;
+    }
+
+    @keyframes noteFloat {
+      0%   { opacity: 0; transform: translateY(0) rotate(0deg); }
+      15%  { opacity: 0.15; }
+      85%  { opacity: 0.1; }
+      100% { opacity: 0; transform: translateY(-80vh) rotate(20deg); }
+    }
+
+    /* Feature pills */
+    .feature-pills {
+      display: flex;
+      justify-content: center;
+      gap: 0.7rem;
+      flex-wrap: wrap;
+      margin-top: 3.5rem;
+      animation: fadeUp 0.8s ease both 0.4s;
+    }
+
+    .feature-pill {
+      padding: 0.4rem 1rem;
+      border-radius: 50px;
+      border: 1px solid var(--border);
+      font-size: 0.78rem;
+      color: var(--muted);
+      background: rgba(255,255,255,0.02);
+      letter-spacing: 0.04em;
+    }
+
+    /* Decorative lines */
+    .lines-decor {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, rgba(201,168,76,0.3) 50%, transparent 100%);
+    }
+
+    /* Scroll hint */
+    .scroll-hint {
+      position: fixed;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.72rem;
+      color: var(--muted2);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      animation: fadeUp 1s ease both 0.8s;
+      z-index: 1;
+    }
+
+    .scroll-hint::after {
+      content: '';
+      width: 1px;
+      height: 36px;
+      background: linear-gradient(to bottom, var(--gold), transparent);
+      animation: pulse 2s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%,100% { opacity: 0.4; }
+      50%     { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background photo -->
+  <div class="bg-photo bg-landing"></div>
+
+  <!-- Orbs -->
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <div class="orb orb-c"></div>
+
+  <!-- Top line -->
+  <div class="lines-decor"></div>
+
+  <!-- Floating notes -->
+  <div class="notes-decor" id="notesDecor"></div>
+
+  <main class="landing-wrap">
+    <div class="hero">
+
+      <div class="logo-mark">
+        <div class="logo-ring">🎵</div>
+        <span class="logo-name">MoodWave</span>
+      </div>
+
+      <p class="hero-eyebrow">AI-Powered Music Discovery</p>
+
+      <h1 class="hero-title">
+        Music that<br><em>feels</em> what<br>you feel
+      </h1>
+
+      <p class="hero-sub">
+        Tell us your mood, energy, and moment — and our AI curates
+        a playlist that resonates with exactly where you are right now.
+      </p>
+
+      <div class="hero-cta">
+        <a href="login.html" class="btn btn-gold btn-large">
+          Get Started &rarr;
+        </a>
+        <div class="waveform" style="margin-left:0.5rem;">
+          <span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+
+      <div class="feature-pills">
+        <span class="feature-pill">✦ AI-Generated Playlists</span>
+        <span class="feature-pill">✦ Mood-Matched Songs</span>
+        <span class="feature-pill">✦ Personalized Vibes</span>
+        <span class="feature-pill">✦ Instant Results</span>
+      </div>
+
+    </div>
+  </main>
+
+  <div class="scroll-hint">Scroll</div>
+
+  <script>
+    // Spawn floating notes
+    const notes = ['♩','♪','♫','♬','𝄞','🎵','🎶'];
+    const decor = document.getElementById('notesDecor');
+    for (let i = 0; i < 12; i++) {
+      const n = document.createElement('span');
+      n.className = 'note';
+      n.textContent = notes[Math.floor(Math.random() * notes.length)];
+      n.style.left = Math.random() * 100 + 'vw';
+      n.style.top  = (60 + Math.random() * 40) + 'vh';
+      n.style.animationDelay    = (Math.random() * 6) + 's';
+      n.style.animationDuration = (6 + Math.random() * 6) + 's';
+      n.style.fontSize = (0.9 + Math.random() * 1.4) + 'rem';
+      decor.appendChild(n);
+    }
+  </script>
+</body>
+</html>

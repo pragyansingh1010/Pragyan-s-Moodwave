@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MoodWave — Sign In</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      padding: 1.5rem;
+    }
+
+    .auth-outer {
+      position: relative; z-index: 1;
+      width: 100%;
+      max-width: 440px;
+      animation: fadeUp 0.7s ease both;
+    }
+
+    /* ── LOGO ── */
+    .auth-logo {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .logo-ring {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(201,168,76,0.45);
+      display: inline-grid;
+      place-items: center;
+      font-size: 1.5rem;
+      background: rgba(201,168,76,0.06);
+      margin-bottom: 0.7rem;
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .logo-name {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    /* ── CARD ── */
+    .auth-card {
+      border-radius: 24px;
+      padding: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Two panels slide horizontally */
+    .panels-track {
+      display: flex;
+      width: 200%;
+      transition: transform 0.52s cubic-bezier(0.77,0,0.18,1);
+    }
+
+    .panel {
+      width: 50%;
+      flex-shrink: 0;
+      padding: 2.6rem 2.4rem 2.2rem;
+    }
+
+    .panels-track.show-signup {
+      transform: translateX(-50%);
+    }
+
+    /* ── HEADINGS ── */
+    .auth-heading {
+      font-family: var(--font-display);
+      font-size: 1.9rem;
+      font-weight: 300;
+      margin-bottom: 0.3rem;
+      letter-spacing: 0.02em;
+    }
+
+    .auth-sub {
+      font-size: 0.83rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+    }
+
+    /* ── INPUT FIELDS ── */
+    .input-field {
+      position: relative;
+      margin-bottom: 1.8rem;
+    }
+
+    .input-field input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--border2);
+      padding: 13px 2.2rem 9px 0;
+      font-family: var(--font-body);
+      font-size: 0.97rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    .input-field input:focus {
+      border-bottom-color: var(--gold);
+    }
+
+    .input-field label {
+      position: absolute;
+      top: 13px; left: 0;
+      font-size: 0.88rem;
+      color: var(--muted);
+      pointer-events: none;
+      transition: all 0.25s ease;
+      letter-spacing: 0.04em;
+    }
+
+    .input-field input:focus ~ label,
+    .input-field input:not(:placeholder-shown) ~ label {
+      top: -9px;
+      font-size: 0.69rem;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .input-field .bar {
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 0; height: 1px;
+      background: linear-gradient(90deg, var(--gold), var(--gold2));
+      transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .input-field input:focus ~ .bar { width: 100%; }
+
+    /* eye toggle */
+    .eye-btn {
+      position: absolute;
+      right: 0; top: 11px;
+      background: none; border: none;
+      color: var(--muted); cursor: pointer;
+      font-size: 0.85rem;
+      transition: color 0.2s;
+      padding: 0; line-height: 1;
+    }
+    .eye-btn:hover { color: var(--gold); }
+
+    /* ── SUBMIT BUTTON ── */
+    .submit-btn {
+      width: 100%;
+      justify-content: center;
+      padding: 1rem;
+      font-size: 0.97rem;
+      margin-top: 0.4rem;
+    }
+
+    /* ── OR DIVIDER ── */
+    .or-divider {
+      display: flex; align-items: center; gap: 1rem;
+      margin: 1.3rem 0;
+      font-size: 0.7rem;
+      color: var(--muted2);
+      letter-spacing: 0.08em;
+    }
+    .or-divider::before, .or-divider::after {
+      content: ''; flex: 1;
+      height: 1px; background: var(--border);
+    }
+
+    /* ── SWITCH PROMPT ── */
+    .switch-row {
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .switch-link {
+      background: none; border: none;
+      color: var(--gold);
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      padding: 0;
+      transition: opacity 0.2s;
+    }
+    .switch-link:hover { opacity: 0.7; }
+
+    /* ── TOASTS ── */
+    .error-toast {
+      font-size: 0.8rem;
+      padding: 0.55rem 0.9rem;
+      border-radius: 8px;
+      display: none;
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+    .error-toast.error {
+      color: var(--rose);
+      background: rgba(251,113,133,0.08);
+      border: 1px solid rgba(251,113,133,0.2);
+    }
+    .error-toast.success {
+      color: #34d399;
+      background: rgba(52,211,153,0.08);
+      border: 1px solid rgba(52,211,153,0.25);
+    }
+    .error-toast.show { display: block; animation: fadeIn 0.3s ease; }
+
+    /* ── SAVED ACCOUNTS ── */
+    #savedSection {
+      margin-top: 0.5rem;
+    }
+
+    .saved-users-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .saved-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.8rem;
+      border-radius: 50px;
+      border: 1px solid var(--border);
+      background: rgba(201,168,76,0.05);
+      font-size: 0.74rem;
+      color: var(--gold);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: var(--font-body);
+    }
+    .saved-badge:hover {
+      background: rgba(201,168,76,0.13);
+      border-color: rgba(201,168,76,0.4);
+      transform: translateY(-1px);
+    }
+
+    /* ── PASSWORD STRENGTH ── */
+    .strength-bar {
+      display: flex;
+      gap: 4px;
+      margin-top: -1.4rem;
+      margin-bottom: 1.5rem;
+    }
+    .strength-seg {
+      flex: 1; height: 3px;
+      border-radius: 2px;
+      background: var(--border2);
+      transition: background 0.35s;
+    }
+
+    /* ── PAGE FOOTER ── */
+    .auth-page-footer {
+      text-align: center;
+      margin-top: 1.4rem;
+    }
+    .auth-page-footer a {
+      font-size: 0.78rem;
+      color: var(--muted2);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .auth-page-footer a:hover { color: var(--gold); }
+
+    /* shake */
+    .shake { animation: shake 0.42s ease !important; }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%      { transform: translateX(-9px); }
+      60%      { transform: translateX(9px); }
+      80%      { transform: translateX(-4px); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background photo -->
+  <div class="bg-photo bg-landing"></div>
+
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+
+  <div class="auth-outer">
+
+    <!-- Logo -->
+    <div class="auth-logo">
+      <div class="logo-ring">🎵</div>
+      <span class="logo-name">MoodWave</span>
+    </div>
+
+    <!-- Auth Card -->
+    <div class="glass auth-card" id="authCard">
+      <div class="panels-track" id="panelsTrack">
+
+        <!-- ═══════════════════════════
+             PANEL 1 — LOGIN
+        ═══════════════════════════ -->
+        <div class="panel" id="loginPanel">
+
+          <h2 class="auth-heading">Welcome back</h2>
+          <p class="auth-sub">Sign in to continue your journey</p>
+
+          <!-- Toast -->
+          <div class="error-toast error" id="loginToast"></div>
+
+          <!-- Username -->
+          <div class="input-field">
+            <input type="text" id="loginUsername" placeholder=" " autocomplete="username"/>
+            <label for="loginUsername">Username</label>
+            <div class="bar"></div>
+          </div>
+
+          <!-- Password -->
+          <div class="input-field">
+            <input type="password" id="loginPassword" placeholder=" " autocomplete="current-password"/>
+            <label for="loginPassword">Password</label>
+            <div class="bar"></div>
+            <button class="eye-btn" type="button" onclick="togglePass('loginPassword', this)">👁</button>
+          </div>
+
+          <button class="btn btn-gold submit-btn" onclick="handleLogin()">
+            Sign In &rarr;
+          </button>
+
+          <!-- Saved accounts quick-fill -->
+          <div id="savedSection" style="display:none;">
+            <div class="or-divider">saved accounts</div>
+            <div class="saved-users-row" id="savedUsersRow"></div>
+          </div>
+
+          <div class="or-divider">new here?</div>
+
+          <div class="switch-row">
+            Don't have an account?
+            <button class="switch-link" onclick="showPanel('signup')">Sign up free →</button>
+          </div>
+
+        </div>
+
+        <!-- ═══════════════════════════
+             PANEL 2 — SIGN UP
+        ═══════════════════════════ -->
+        <div class="panel" id="signupPanel">
+
+          <h2 class="auth-heading">Create account</h2>
+          <p class="auth-sub">Fill in your details to get started</p>
+
+          <div class="error-toast error"   id="signupToast"></div>
+          <div class="error-toast success" id="signupSuccess"></div>
+
+          <!-- Username -->
+          <div class="input-field">
+            <input type="text" id="suUsername" placeholder=" " autocomplete="username"/>
+            <label for="suUsername">Username</label>
+            <div class="bar"></div>
+          </div>
+
+          <!-- Email -->
+          <div class="input-field">
+            <input type="email" id="suEmail" placeholder=" " autocomplete="email"/>
+            <label for="suEmail">Email Address</label>
+            <div class="bar"></div>
+          </div>
+
+          <!-- Phone -->
+          <div class="input-field">
+            <input type="tel" id="suPhone" placeholder=" " autocomplete="tel"/>
+            <label for="suPhone">Phone Number</label>
+            <div class="bar"></div>
+          </div>
+
+          <!-- Password -->
+          <div class="input-field">
+            <input type="password" id="suPassword" placeholder=" "
+              autocomplete="new-password"
+              oninput="checkStrength(this.value)"/>
+            <label for="suPassword">Password</label>
+            <div class="bar"></div>
+            <button class="eye-btn" type="button" onclick="togglePass('suPassword', this)">👁</button>
+          </div>
+
+          <!-- Strength bar -->
+          <div class="strength-bar">
+            <div class="strength-seg" id="s1"></div>
+            <div class="strength-seg" id="s2"></div>
+            <div class="strength-seg" id="s3"></div>
+            <div class="strength-seg" id="s4"></div>
+          </div>
+
+          <button class="btn btn-gold submit-btn" onclick="handleSignup()">
+            Create Account &rarr;
+          </button>
+
+          <div class="or-divider"></div>
+
+          <div class="switch-row">
+            Already have an account?
+            <button class="switch-link" onclick="showPanel('login')">← Sign in</button>
+          </div>
+
+        </div>
+
+      </div>
+    </div><!-- /auth-card -->
+
+    <div class="auth-page-footer">
+      <a href="index.html">← Back to home</a>
+    </div>
+
+  </div>
+
+  <script>
+  /* ───────────────────────────────────────────
+     STORAGE  (localStorage → persist across sessions)
+  ─────────────────────────────────────────── */
+  const DB_KEY = 'mw_users';
+
+  function getUsers() {
+    try { return JSON.parse(localStorage.getItem(DB_KEY)) || []; }
+    catch { return []; }
+  }
+
+  function saveUsers(arr) {
+    localStorage.setItem(DB_KEY, JSON.stringify(arr));
+  }
+
+  function findUser(username) {
+    return getUsers().find(u => u.username.toLowerCase() === username.trim().toLowerCase());
+  }
+
+  function registerUser(data) {
+    const users = getUsers();
+    users.push(data);
+    saveUsers(users);
+  }
+
+  /* ───────────────────────────────────────────
+     PANEL SWITCHING
+  ─────────────────────────────────────────── */
+  function showPanel(which) {
+    const track = document.getElementById('panelsTrack');
+    track.classList.toggle('show-signup', which === 'signup');
+    clearAllToasts();
+  }
+
+  function clearAllToasts() {
+    ['loginToast','signupToast','signupSuccess'].forEach(id => {
+      const el = document.getElementById(id);
+      el.classList.remove('show');
+      el.textContent = '';
+    });
+  }
+
+  /* ───────────────────────────────────────────
+     LOGIN
+  ─────────────────────────────────────────── */
+  function handleLogin() {
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const toast    = document.getElementById('loginToast');
+    const card     = document.getElementById('authCard');
+
+    toast.classList.remove('show');
+
+    if (!username || !password) {
+      showToast(toast, 'error', '⚠️ Please enter your username and password.');
+      wiggle(card); return;
+    }
+
+    const user = findUser(username);
+
+    if (!user) {
+      showToast(toast, 'error', '⚠️ No account found with that username. Sign up first!');
+      wiggle(card); return;
+    }
+
+    if (user.password !== password) {
+      showToast(toast, 'error', '⚠️ Incorrect password. Please try again.');
+      wiggle(card); return;
+    }
+
+    // ✅ Logged in — save session
+    sessionStorage.setItem('mw_user',  user.username);
+    sessionStorage.setItem('mw_email', user.email);
+    sessionStorage.setItem('mw_phone', user.phone);
+
+    showToast(toast, 'success', `✅ Welcome back, ${user.username}! Taking you in…`);
+    toast.classList.remove('error');
+    toast.classList.add('success');
+
+    setTimeout(() => fadeOut(() => window.location.href = 'mood.html'), 900);
+  }
+
+  /* ───────────────────────────────────────────
+     SIGN UP
+  ─────────────────────────────────────────── */
+  function handleSignup() {
+    const username = document.getElementById('suUsername').value.trim();
+    const email    = document.getElementById('suEmail').value.trim();
+    const phone    = document.getElementById('suPhone').value.trim();
+    const password = document.getElementById('suPassword').value;
+    const errorEl  = document.getElementById('signupToast');
+    const successEl= document.getElementById('signupSuccess');
+    const card     = document.getElementById('authCard');
+
+    clearAllToasts();
+
+    // ── Validation ──
+    if (!username || !email || !phone || !password) {
+      showToast(errorEl, 'error', '⚠️ All four fields are required to continue.');
+      wiggle(card); return;
+    }
+    if (username.length < 3) {
+      showToast(errorEl, 'error', '⚠️ Username must be at least 3 characters.'); return;
+    }
+    if (!isValidEmail(email)) {
+      showToast(errorEl, 'error', '⚠️ Please enter a valid email address.'); return;
+    }
+    if (!isValidPhone(phone)) {
+      showToast(errorEl, 'error', '⚠️ Enter a valid phone number (7–15 digits).'); return;
+    }
+    if (password.length < 6) {
+      showToast(errorEl, 'error', '⚠️ Password must be at least 6 characters.'); return;
+    }
+    if (findUser(username)) {
+      showToast(errorEl, 'error', '⚠️ That username is already taken. Try another.'); return;
+    }
+
+    // ── Save to localStorage ──
+    registerUser({ username, email, phone, password });
+
+    // Show success
+    showToast(successEl, 'success', `✅ Account created! Switching to sign in…`);
+
+    setTimeout(() => {
+      // Pre-fill the login username field
+      document.getElementById('loginUsername').value = username;
+      document.getElementById('loginPassword').value = '';
+
+      // Clear signup fields
+      ['suUsername','suEmail','suPhone','suPassword'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      resetStrength();
+      clearAllToasts();
+
+      // Switch to login panel
+      showPanel('login');
+      refreshSavedUsers();
+
+      // Friendly login prompt
+      const lt = document.getElementById('loginToast');
+      lt.className = 'error-toast success show';
+      lt.textContent = `✅ Hi ${username}! Now enter your password to sign in.`;
+    }, 1500);
+  }
+
+  /* ───────────────────────────────────────────
+     SAVED ACCOUNTS (quick-fill)
+  ─────────────────────────────────────────── */
+  function refreshSavedUsers() {
+    const users   = getUsers();
+    const section = document.getElementById('savedSection');
+    const row     = document.getElementById('savedUsersRow');
+
+    if (users.length === 0) { section.style.display = 'none'; return; }
+
+    section.style.display = 'block';
+    row.innerHTML = '';
+
+    users.forEach(u => {
+      const badge = document.createElement('button');
+      badge.className = 'saved-badge';
+      badge.textContent = '👤 ' + u.username;
+      badge.title = u.email;
+      badge.onclick = () => {
+        document.getElementById('loginUsername').value = u.username;
+        document.getElementById('loginPassword').focus();
+      };
+      row.appendChild(badge);
+    });
+  }
+
+  /* ───────────────────────────────────────────
+     PASSWORD STRENGTH
+  ─────────────────────────────────────────── */
+  function checkStrength(val) {
+    let score = 0;
+    if (val.length >= 6)                      score++;
+    if (val.length >= 10)                     score++;
+    if (/[A-Z]/.test(val) || /\d/.test(val)) score++;
+    if (/[^a-zA-Z0-9]/.test(val))            score++;
+
+    const palette = ['#f87171','#fb923c','#facc15','#34d399'];
+    ['s1','s2','s3','s4'].forEach((id, i) => {
+      document.getElementById(id).style.background =
+        i < score ? palette[score - 1] : 'var(--border2)';
+    });
+  }
+
+  function resetStrength() {
+    ['s1','s2','s3','s4'].forEach(id => {
+      document.getElementById(id).style.background = 'var(--border2)';
+    });
+  }
+
+  /* ───────────────────────────────────────────
+     HELPERS
+  ─────────────────────────────────────────── */
+  function showToast(el, type, msg) {
+    el.className = 'error-toast ' + type + ' show';
+    el.textContent = msg;
+  }
+
+  function wiggle(el) {
+    el.classList.add('shake');
+    setTimeout(() => el.classList.remove('shake'), 450);
+  }
+
+  function fadeOut(cb) {
+    const el = document.querySelector('.auth-outer');
+    el.style.transition = 'all 0.4s ease';
+    el.style.opacity    = '0';
+    el.style.transform  = 'translateY(-14px)';
+    setTimeout(cb, 420);
+  }
+
+  function togglePass(inputId, btn) {
+    const inp = document.getElementById(inputId);
+    if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+    else                         { inp.type = 'password'; btn.textContent = '👁'; }
+  }
+
+  function isValidEmail(e)  { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+  function isValidPhone(p)  { return /^\+?[\d\s\-(). ]{7,15}$/.test(p); }
+
+  /* ───────────────────────────────────────────
+     KEYBOARD — Enter key submits active panel
+  ─────────────────────────────────────────── */
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const isSignup = document.getElementById('panelsTrack').classList.contains('show-signup');
+    isSignup ? handleSignup() : handleLogin();
+  });
+
+  /* ───────────────────────────────────────────
+     INIT
+  ─────────────────────────────────────────── */
+  // Skip login if already in session
+  if (sessionStorage.getItem('mw_user')) {
+    window.location.href = 'mood.html';
+  }
+
+  // Load saved user badges
+  refreshSavedUsers();
+  </script>
+</body>
+</html>

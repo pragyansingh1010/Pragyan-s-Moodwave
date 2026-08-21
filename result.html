@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MoodWave — Your Playlist</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+
+    /* ══ LAYOUT ══════════════════════════════════════ */
+    .result-page {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 3rem 1.5rem 10rem;
+    }
+    .result-inner { width: 100%; max-width: 680px; }
+
+    /* ══ NAV ══════════════════════════════════════════ */
+    .top-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 2.5rem; animation: fadeUp 0.5s ease both;
+    }
+    .nav-logo {
+      font-family: var(--font-display); font-size: 1rem;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--gold); display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    /* ══ HEADING CARD ════════════════════════════════ */
+    .heading-wrap {
+      background: rgba(10,11,18,0.80);
+      border: 1px solid rgba(255,255,255,0.07);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border-radius: 20px; padding: 1.4rem 1.6rem 1.2rem;
+      margin-bottom: 1.2rem; animation: fadeUp 0.6s ease both 0.06s;
+    }
+    .mood-badge-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .mood-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.4rem 1rem; border-radius: 50px;
+      font-size: 0.8rem; font-weight: 500; border: 1px solid;
+    }
+    .result-heading {
+      font-family: var(--font-display);
+      font-size: clamp(2rem,5vw,2.8rem); font-weight: 300; margin-bottom: 0.3rem;
+    }
+    .result-sub { font-size: 0.87rem; color: var(--muted); }
+
+    /* ══ SECTION LABEL ═══════════════════════════════ */
+    .section-label {
+      font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 0.9rem;
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+    /* ══ PLAYLIST CARD ═══════════════════════════════ */
+    .playlist-wrap {
+      background: rgba(10,11,18,0.82);
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+      border-radius: 20px; padding: 1.6rem 1.6rem 1.2rem;
+      margin-bottom: 1.5rem; animation: fadeUp 0.6s ease both 0.12s;
+    }
+    #song-list { display: flex; flex-direction: column; gap: 0.55rem; }
+
+    /* ══ SONG CARD ═══════════════════════════════════ */
+    .song-card {
+      display: flex; align-items: center; gap: 0.9rem;
+      padding: 0.85rem 1rem; border-radius: 14px;
+      background: rgba(255,255,255,0.028); border: 1px solid var(--border);
+      transition: all 0.22s ease; position: relative; overflow: hidden;
+      cursor: pointer; animation: fadeUp 0.4s ease both;
+      text-decoration: none;
+    }
+    .song-card::before {
+      content:''; position:absolute; inset:0;
+      background: linear-gradient(135deg, rgba(201,168,76,0.07), transparent);
+      opacity:0; transition: opacity 0.25s;
+    }
+    .song-card:hover                { border-color: rgba(201,168,76,0.3); transform: translateX(3px); }
+    .song-card:hover::before        { opacity: 1; }
+    .song-card.active               { border-color: rgba(201,168,76,0.55); background: rgba(201,168,76,0.07); }
+    .song-card.active::before       { opacity: 1; }
+
+    /* art */
+    .art-wrap { position:relative; flex-shrink:0; width:50px; height:50px; }
+    .song-art, .art-ph {
+      width:50px; height:50px; border-radius:10px;
+      border: 1px solid var(--border); display:block;
+    }
+    .song-art { object-fit:cover; }
+    .art-ph   { background: rgba(255,255,255,0.05); display:grid; place-items:center; font-size:1.25rem; }
+
+    /* hover overlay — opens Last.fm page */
+    .play-ov {
+      position:absolute; inset:0; border-radius:10px;
+      background: rgba(0,0,0,0.62);
+      display:grid; place-items:center;
+      font-size:0.85rem; color:#fff;
+      opacity:0; transition: opacity 0.18s;
+    }
+    .song-card:hover .play-ov,
+    .song-card.active .play-ov { opacity:1; }
+
+    /* text */
+    .song-info { flex:1; min-width:0; }
+    .song-title  { font-weight:500; font-size:0.92rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:0.15rem; }
+    .song-artist { font-size:0.77rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+    /* right col */
+    .song-right { display:flex; flex-direction:column; align-items:flex-end; gap:0.3rem; flex-shrink:0; }
+    .lfm-tag {
+      font-size:0.65rem; padding:0.2rem 0.55rem; border-radius:50px;
+      background:rgba(201,168,76,0.1); color:var(--gold);
+      border:1px solid rgba(201,168,76,0.25); white-space:nowrap;
+    }
+
+    /* ══ SKELETON ════════════════════════════════════ */
+    .skeleton{background:linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.09) 50%,rgba(255,255,255,0.04) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:var(--r);}
+    .sk-row{height:68px;margin-bottom:0.55rem;}
+    @keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+
+    /* stagger */
+    .song-card:nth-child(1){animation-delay:0.10s;}
+    .song-card:nth-child(2){animation-delay:0.16s;}
+    .song-card:nth-child(3){animation-delay:0.22s;}
+    .song-card:nth-child(4){animation-delay:0.28s;}
+    .song-card:nth-child(5){animation-delay:0.34s;}
+
+    /* ══ API STATUS BADGE ════════════════════════════ */
+    .api-badge {
+      display:inline-flex; align-items:center; gap:0.4rem;
+      font-size:0.65rem; color:var(--muted2);
+      padding:0.2rem 0.6rem; border-radius:50px;
+      border:1px solid var(--border); background:rgba(255,255,255,0.02);
+      margin-left:0.5rem;
+    }
+    .api-dot { width:5px; height:5px; border-radius:50%; background:var(--teal); animation:pulseDot 1.5s ease-in-out infinite; }
+    @keyframes pulseDot { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.6);opacity:0.5;} }
+
+    /* ══ AI INSIGHT ══════════════════════════════════ */
+    .ai-glass {
+      border-radius:20px; padding:1.8rem;
+      background:rgba(10,11,18,0.82) !important;
+      border:1px solid rgba(255,255,255,0.08) !important;
+      animation:fadeUp 0.7s ease both 0.3s;
+    }
+    .ai-loading { display:flex; align-items:center; gap:0.8rem; color:var(--muted); font-size:0.9rem; }
+    .ai-label   { font-size:0.68rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold); margin-bottom:0.4rem; }
+    .ai-text    { font-size:0.92rem; line-height:1.75; color:var(--text); font-weight:300; }
+    .info-grid  { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.2rem; }
+
+    /* ══ ACTION ROW ══════════════════════════════════ */
+    .action-row {
+      display:flex; gap:0.8rem; margin-top:1.5rem;
+      animation:fadeUp 0.7s ease both 0.38s; flex-wrap:wrap;
+    }
+    .action-row .btn { flex:1; min-width:130px; justify-content:center; padding:0.9rem 1rem; }
+
+    /* header waveform */
+    .header-wave { display:flex; align-items:flex-end; gap:3px; height:20px; }
+    .header-wave span { display:block; width:3px; background:linear-gradient(to top,var(--gold),var(--gold2)); border-radius:2px; animation:wave 1.2s ease-in-out infinite; }
+    .header-wave span:nth-child(1){height:6px; animation-delay:0s;}
+    .header-wave span:nth-child(2){height:14px;animation-delay:0.10s;}
+    .header-wave span:nth-child(3){height:9px; animation-delay:0.20s;}
+    .header-wave span:nth-child(4){height:18px;animation-delay:0.30s;}
+    .header-wave span:nth-child(5){height:11px;animation-delay:0.15s;}
+
+    /* ══ NO-PREVIEW NOTICE ═══════════════════════════ */
+    .no-preview-notice {
+      font-size:0.78rem; color:var(--muted); text-align:center;
+      padding:0.6rem 1rem; background:rgba(255,255,255,0.03);
+      border-radius:10px; border:1px solid var(--border);
+      margin-top:0.6rem; line-height:1.6;
+    }
+    .no-preview-notice a { color:var(--gold); text-decoration:none; }
+    .no-preview-notice a:hover { text-decoration:underline; }
+
+    .ai-section { margin-top:0; }
+
+    @media(max-width:600px){
+      .info-grid{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-photo bg-landing" id="bgPhoto"></div>
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <div class="orb orb-c"></div>
+
+  <!-- ══ MAIN CONTENT ══════════════════════════════════════ -->
+  <main class="result-page">
+    <div class="result-inner">
+
+      <nav class="top-nav">
+        <div class="nav-logo">🎵 MoodWave</div>
+        <button class="back-link" onclick="window.location.href='mood.html'">← Change Mood</button>
+      </nav>
+
+      <div class="heading-wrap">
+        <div class="mood-badge-row">
+          <div class="mood-badge" id="moodBadge">—</div>
+          <div class="header-wave"><span></span><span></span><span></span><span></span><span></span></div>
+          <span class="api-badge"><span class="api-dot"></span>Last.fm API</span>
+        </div>
+        <h1 class="result-heading">Your Playlist 🎶</h1>
+        <p class="result-sub" id="resultSub">Curated just for your vibe.</p>
+      </div>
+
+      <div class="playlist-wrap">
+        <div class="section-label" style="margin-bottom:1rem;">
+          🎧 Recommended Songs
+          <span style="color:var(--gold);font-size:0.61rem;text-transform:none;letter-spacing:0;margin-left:0.2rem;">(click a track to open on Last.fm)</span>
+        </div>
+        <div id="song-list">
+          <div class="skeleton sk-row"></div>
+          <div class="skeleton sk-row"></div>
+          <div class="skeleton sk-row"></div>
+          <div class="skeleton sk-row"></div>
+          <div class="skeleton sk-row"></div>
+        </div>
+
+        <!-- Last.fm doesn't give audio previews via free API -->
+        <div class="no-preview-notice" id="noPreviewNotice" style="display:none;">
+          ℹ️ Audio previews aren't available via the Last.fm free API.
+          Click any song card to open it on
+          <a href="https://www.last.fm" target="_blank" rel="noopener">Last.fm</a>
+          and listen in full.
+        </div>
+      </div>
+
+      <div class="ai-section">
+        <div class="section-label">✦ AI Insight</div>
+        <div class="glass ai-glass">
+          <div id="ai-loading" class="ai-loading">
+            <div class="spinner"></div>
+            <span>Generating your personalized insight…</span>
+          </div>
+          <div id="ai-content" style="display:none;">
+            <div class="info-grid">
+              <div class="info-card">
+                <div class="info-card-label">💬 For Your Mood</div>
+                <div class="info-card-value" id="ai-quote">—</div>
+              </div>
+              <div class="info-card">
+                <div class="info-card-label">🎯 Suggested Activity</div>
+                <div class="info-card-value" id="ai-activity">—</div>
+              </div>
+            </div>
+            <div>
+              <div class="ai-label">✦ Playlist Insight</div>
+              <p class="ai-text" id="ai-insight">—</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button class="btn btn-gold"   onclick="window.location.href='mood.html'">🔄 Try Another Mood</button>
+        <button class="btn btn-ghost"  onclick="window.location.href='index.html'">🏠 Home</button>
+        <button class="btn btn-violet" id="shuffleBtn" onclick="shufflePlaylist()">🎲 Shuffle</button>
+      </div>
+
+    </div>
+  </main>
+
+  
+  <!-- ② Main logic (fetchSongsWithFallback, fetchInsightFromAI, etc.) -->
+  <script src="script.js"></script>
+
+  <script>
+  /* ─────────────────────────────────────────────────────
+     URL PARAMS
+  ───────────────────────────────────────────────────── */
+  const params = new URLSearchParams(window.location.search);
+  const mood   = params.get('mood')   || 'happy';
+  const energy = params.get('energy') || 'medium';
+  const time   = params.get('time')   || 'evening';
+
+  let tracks = [];
+
+  /* ─────────────────────────────────────────────────────
+     INIT
+  ───────────────────────────────────────────────────── */
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (!params.get('mood')) { window.location.href = 'mood.html'; return; }
+
+    // Load config (.env) first, then fetch songs
+    
+
+    initBadge();
+    loadPlaylist();
+  });
+
+  /* ─────────────────────────────────────────────────────
+     BADGE + BACKGROUND
+  ───────────────────────────────────────────────────── */
+  function initBadge() {
+    const meta  = getMoodMeta(mood);
+    const badge = document.getElementById('moodBadge');
+    badge.textContent       = `${meta.emoji} ${meta.label} · ${cap(energy)} energy · ${cap(time)}`;
+    badge.style.background  = meta.color + '18';
+    badge.style.borderColor = meta.color + '44';
+    badge.style.color       = meta.color;
+
+    document.getElementById('resultSub').textContent =
+      `Via Last.fm · ${meta.label.toLowerCase()} mood · ${time} vibe.`;
+
+    // Set mood background photo
+    const bg = document.getElementById('bgPhoto');
+    ['bg-landing','bg-happy','bg-sad','bg-relaxed','bg-angry',
+     'bg-focused','bg-euphoric','bg-melancholic','bg-anxious']
+      .forEach(c => bg.classList.remove(c));
+    bg.classList.add('bg-' + mood);
+  }
+
+  /* ─────────────────────────────────────────────────────
+     LOAD PLAYLIST (Last.fm via script.js helper)
+  ───────────────────────────────────────────────────── */
+  async function loadPlaylist() {
+    showSkeletons();
+    try {
+      tracks = await fetchSongsWithFallback(mood, energy, time, 5);
+    } catch (e) {
+      tracks = [];
+    }
+    renderTracks(tracks);
+    loadInsight(tracks);
+  }
+
+  /* ─────────────────────────────────────────────────────
+     RENDER TRACK CARDS
+  ───────────────────────────────────────────────────── */
+  function renderTracks(list) {
+    const el = document.getElementById('song-list');
+    el.innerHTML = '';
+
+    if (!list.length) {
+      el.innerHTML = `<div style="text-align:center;color:var(--muted);padding:2rem 0;">
+        Couldn't reach Last.fm right now. Check your connection and shuffle again!
+      </div>`;
+      document.getElementById('noPreviewNotice').style.display = 'none';
+      return;
+    }
+
+    // Show the "no preview" info notice
+    document.getElementById('noPreviewNotice').style.display = 'block';
+
+    list.forEach((t, i) => {
+      // Each card is an anchor that opens Last.fm in a new tab
+      const card = document.createElement('a');
+      card.className = 'song-card';
+      card.id        = `card-${i}`;
+      card.href      = t.lastfmUrl || `https://www.last.fm/music/${encodeURIComponent(t.artist)}/_/${encodeURIComponent(t.title)}`;
+      card.target    = '_blank';
+      card.rel       = 'noopener noreferrer';
+
+      const artHTML = t.artUrl
+        ? `<img src="${t.artUrl}" class="song-art" alt="${esc(t.title)}" loading="lazy" onerror="this.outerHTML='<div class=art-ph>🎵</div>'"/>`
+        : `<div class="art-ph">🎵</div>`;
+
+      card.innerHTML = `
+        <div class="art-wrap">
+          ${artHTML}
+          <div class="play-ov">↗</div>
+        </div>
+        <div class="song-info">
+          <div class="song-title">${esc(t.title)}</div>
+          <div class="song-artist">${esc(t.artist)}</div>
+        </div>
+        <div class="song-right">
+          <span class="lfm-tag">Last.fm ↗</span>
+        </div>
+      `;
+
+      el.appendChild(card);
+    });
+  }
+
+  /* ─────────────────────────────────────────────────────
+     SKELETON LOADER
+  ───────────────────────────────────────────────────── */
+  function showSkeletons() {
+    document.getElementById('song-list').innerHTML = `
+      <div class="skeleton sk-row"></div>
+      <div class="skeleton sk-row"></div>
+      <div class="skeleton sk-row"></div>
+      <div class="skeleton sk-row"></div>
+      <div class="skeleton sk-row"></div>`;
+  }
+
+  /* ─────────────────────────────────────────────────────
+     SHUFFLE — calls Last.fm again for a fresh batch
+  ───────────────────────────────────────────────────── */
+  async function shufflePlaylist() {
+    const btn = document.getElementById('shuffleBtn');
+    btn.disabled = true; btn.textContent = '⏳ Fetching…';
+
+    document.getElementById('noPreviewNotice').style.display = 'none';
+    showSkeletons();
+
+    try {
+      tracks = await fetchSongsWithFallback(mood, energy, time, 5);
+    } catch (e) {
+      tracks = [];
+    }
+
+    const list = document.getElementById('song-list');
+    list.style.opacity = '0'; list.style.transition = 'opacity 0.2s';
+    setTimeout(() => {
+      renderTracks(tracks);
+      list.style.opacity = '1';
+    }, 200);
+
+    btn.disabled = false; btn.textContent = '🎲 Shuffle';
+  }
+
+  /* ─────────────────────────────────────────────────────
+     AI INSIGHT
+  ───────────────────────────────────────────────────── */
+  async function loadInsight(list) {
+    let insight;
+    try {
+      if (list.length > 0) {
+        insight = await fetchInsightFromAI(mood, energy, time, list);
+        if (!insight || !insight.quote) throw new Error('bad response');
+      } else {
+        throw new Error('no tracks');
+      }
+    } catch (e) {
+      insight = getFallbackInsight(mood);
+    }
+    document.getElementById('ai-quote').textContent    = insight.quote    || '—';
+    document.getElementById('ai-activity').textContent = insight.activity || '—';
+    document.getElementById('ai-insight').textContent  = insight.insight  || '—';
+    document.getElementById('ai-loading').style.display = 'none';
+    const c = document.getElementById('ai-content');
+    c.style.display = 'block'; c.style.animation = 'fadeUp 0.5s ease both';
+  }
+
+  /* ─────────────────────────────────────────────────────
+     HELPERS
+  ───────────────────────────────────────────────────── */
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  </script>
+</body>
+</html>

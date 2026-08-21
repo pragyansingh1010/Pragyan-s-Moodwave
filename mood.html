@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MoodWave — How Are You Feeling?</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .mood-page {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 3rem 1.5rem 4rem;
+    }
+
+    .mood-inner {
+      width: 100%;
+      max-width: 700px;
+    }
+
+    /* ── NAV ── */
+    .top-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 3rem;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* ── HEADER ── */
+    .mood-header {
+      margin-bottom: 2.4rem;
+      animation: fadeUp 0.6s ease both 0.08s;
+    }
+
+    .mood-header h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 300;
+      line-height: 1.2;
+      margin-bottom: 0.6rem;
+    }
+
+    .mood-header p {
+      font-size: 0.92rem;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    /* ── CARD ── */
+    .mood-card {
+      border-radius: 24px;
+      padding: 2.4rem 2.4rem 2rem;
+      animation: fadeUp 0.7s ease both 0.14s;
+    }
+
+    /* ── SECTION ── */
+    .selector-section {
+      margin-bottom: 2rem;
+    }
+
+    .selector-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .selector-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .pill-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+
+    /* ── PROGRESS DOTS ── */
+    .progress-dots {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+      animation: fadeUp 0.5s ease both 0.05s;
+    }
+
+    .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--border2);
+      transition: all 0.3s ease;
+    }
+
+    .dot.filled {
+      background: var(--gold);
+      box-shadow: 0 0 8px rgba(201,168,76,0.5);
+      width: 20px;
+      border-radius: 3px;
+    }
+
+    /* ── FOOTER ── */
+    .mood-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .mood-footer .btn {
+      padding: 1rem 2.4rem;
+      font-size: 1rem;
+    }
+
+    /* ── GENRE SELECT ── */
+    .genre-note {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    /* ── VALIDATION ── */
+    #val-error { margin-bottom: 0; margin-top: 0.5rem; }
+
+    /* ── GREETING ── */
+    #greeting {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    /* ── BG TRANSITION ── */
+    #bgPhoto {
+      transition: opacity 0.5s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-photo bg-landing" id="bgPhoto"></div>
+
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <div class="orb orb-c"></div>
+
+  <main class="mood-page">
+    <div class="mood-inner">
+
+      <!-- Top nav -->
+      <nav class="top-nav">
+        <div class="nav-logo">🎵 MoodWave</div>
+        <span id="greeting"></span>
+      </nav>
+
+      <!-- Progress dots -->
+      <div class="progress-dots">
+        <div class="dot filled" id="dot1"></div>
+        <div class="dot" id="dot2"></div>
+        <div class="dot" id="dot3"></div>
+      </div>
+
+      <!-- Header -->
+      <div class="mood-header">
+        <h1>How are you<br><em style="font-style:italic;background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">feeling?</em></h1>
+        <p>Choose your current mood, energy level, and the time of your day.</p>
+      </div>
+
+      <!-- Card -->
+      <div class="glass mood-card">
+
+        <!-- Mood -->
+        <div class="selector-section">
+          <div class="selector-label">🎭 Your Mood</div>
+          <div class="pill-group" id="moodGroup">
+            <button class="pill-btn" data-val="happy">😊 Happy</button>
+            <button class="pill-btn" data-val="sad">😢 Sad</button>
+            <button class="pill-btn" data-val="relaxed">😌 Relaxed</button>
+            <button class="pill-btn" data-val="angry">😤 Angry</button>
+            <button class="pill-btn" data-val="focused">🎯 Focused</button>
+            <button class="pill-btn" data-val="euphoric">✨ Euphoric</button>
+            <button class="pill-btn" data-val="melancholic">🌧 Melancholic</button>
+            <button class="pill-btn" data-val="anxious">😰 Anxious</button>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Energy -->
+        <div class="selector-section">
+          <div class="selector-label">⚡ Energy Level</div>
+          <div class="pill-group" id="energyGroup">
+            <button class="pill-btn" data-val="low">🔋 Low — drained</button>
+            <button class="pill-btn" data-val="medium">⚡ Medium — balanced</button>
+            <button class="pill-btn" data-val="high">🚀 High — electric</button>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Time -->
+        <div class="selector-section">
+          <div class="selector-label">🕐 Time of Day</div>
+          <div class="pill-group" id="timeGroup">
+            <button class="pill-btn" data-val="morning">🌅 Morning</button>
+            <button class="pill-btn" data-val="afternoon">☀️ Afternoon</button>
+            <button class="pill-btn" data-val="evening">🌆 Evening</button>
+            <button class="pill-btn" data-val="night">🌙 Night</button>
+          </div>
+        </div>
+
+        <!-- Error -->
+        <div class="error-toast" id="val-error">
+          Please select one option from each category before continuing.
+        </div>
+
+        <!-- Footer -->
+        <div class="mood-footer">
+          <button class="back-link" onclick="window.location.href='login.html'">
+            ← Back
+          </button>
+          <button class="btn btn-gold" onclick="proceed()">
+            Get My Playlist &rarr;
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+  <script>
+    // Greeting
+    const user = sessionStorage.getItem('mw_user');
+    if (user) {
+      document.getElementById('greeting').textContent = 'Hey, ' + user + ' 👋';
+    }
+
+    // Pill selector logic
+    let sel = { mood: null, energy: null, time: null };
+
+    const MOOD_BG_CLASSES = ['bg-happy','bg-sad','bg-relaxed','bg-angry','bg-focused','bg-euphoric','bg-melancholic','bg-anxious'];
+
+    function setMoodBackground(mood) {
+      const bg = document.getElementById('bgPhoto');
+      // Fade out, swap, fade in
+      bg.style.opacity = '0';
+      setTimeout(() => {
+        MOOD_BG_CLASSES.forEach(c => bg.classList.remove(c));
+        bg.classList.remove('bg-landing');
+        if (mood) bg.classList.add('bg-' + mood);
+        else bg.classList.add('bg-landing');
+        bg.style.opacity = '1';
+      }, 350);
+    }
+
+    function makePillGroup(groupId, key, dotId) {
+      const group = document.getElementById(groupId);
+      group.querySelectorAll('.pill-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+          group.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          sel[key] = this.dataset.val;
+          if (key === 'mood') setMoodBackground(sel.mood);
+          updateDots();
+        });
+      });
+    }
+
+    makePillGroup('moodGroup',   'mood',   'dot1');
+    makePillGroup('energyGroup', 'energy', 'dot2');
+    makePillGroup('timeGroup',   'time',   'dot3');
+
+    function updateDots() {
+      const count = [sel.mood, sel.energy, sel.time].filter(Boolean).length;
+      document.getElementById('dot1').classList.toggle('filled', count >= 1);
+      document.getElementById('dot2').classList.toggle('filled', count >= 2);
+      document.getElementById('dot3').classList.toggle('filled', count >= 3);
+    }
+
+    function proceed() {
+      if (!sel.mood || !sel.energy || !sel.time) {
+        document.getElementById('val-error').classList.add('show');
+        return;
+      }
+      document.getElementById('val-error').classList.remove('show');
+
+      const params = new URLSearchParams({
+        mood:   sel.mood,
+        energy: sel.energy,
+        time:   sel.time
+      });
+
+      // Fade out
+      document.querySelector('.mood-inner').style.opacity = '0';
+      document.querySelector('.mood-inner').style.transform = 'translateY(-12px)';
+      document.querySelector('.mood-inner').style.transition = 'all 0.4s ease';
+
+      setTimeout(() => {
+        window.location.href = 'result.html?' + params.toString();
+      }, 420);
+    }
+  </script>
+</body>
+</html>
